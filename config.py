@@ -1,68 +1,88 @@
-import logging
-from logging.handlers import RotatingFileHandler
+"""
+config.py
+---------
+Central configuration for the File Store Bot.
 
-# Bot Configuration
-LOG_FILE_NAME = "bot.log"
-PORT = '5010'
-OWNER_ID = 6497757690
+IMPORTANT SECURITY NOTE:
+Hard-coding secrets (bot tokens, API hashes) directly in source code is not
+recommended for production. Prefer environment variables. The values below
+fall back to the literals you supplied, but you can (and should) override
+them by exporting the corresponding environment variables before running
+the bot, e.g.:
 
-MSG_EFFECT = 5046509860389126442
+    export BOT_TOKEN="xxxx"
+    export API_ID="xxxx"
+    export API_HASH="xxxx"
 
-SHORT_URL = "linkshortify.com" # shortner url 
-SHORT_API = "" 
-SHORT_TUT = "https://t.me/How_to_Download_7x/26"
+Anyone who has seen this bot token in this script (or in any repo/commit
+history) can control your bot. If this token has ever been shared publicly,
+regenerate it via @BotFather -> /revoke.
+"""
 
-# Bot Configuration
-SESSION = "yato"
-TOKEN = "642712"
-API_ID = ""
-API_HASH = ""
-WORKERS = 5
+import os
 
-DB_URI = "mongodb"
-DB_NAME = "yato"
+# ---------------------------------------------------------------------------
+# Core Pyrogram / Telegram credentials
+# ---------------------------------------------------------------------------
+# API_ID / API_HASH come from https://my.telegram.org -> API Development Tools.
+# A bot token alone is NOT enough for Pyrogram; you must supply these too.
+API_ID = int(os.environ.get("API_ID", "36237034"))            # <-- fill in your API_ID
+API_HASH = os.environ.get("API_HASH", "31c376a5c49eabb8426df4d1f21a5d52")               # <-- fill in your API_HASH
+BOT_TOKEN = os.environ.get(
+    "BOT_TOKEN",
+    "8997630378:AAH3uNrz2bZLqXttAXD2hxOlFoAU398xisM",
+)
 
-FSUBS = [[-1003016571084, True, 10]] # Force Subscription Channels [channel_id, request_enabled, timer_in_minutes]
-# Database Channel (Primary)
-DB_CHANNEL =    # just put channel id dont add ""
-# Multiple Database Channels (can be set via bot settings)
-# DB_CHANNELS = {
-#     "-1002595092736": {"name": "Primary DB", "is_primary": True, "is_active": True},
-#     "-1001234567890": {"name": "Secondary DB", "is_primary": False, "is_active": True}
-# }
-# Auto Delete Timer (seconds)
-AUTO_DEL = 300
-# Admin IDs
-ADMINS = [6497757690, 6103092779]
-# Bot Settings
-DISABLE_BTN = True
-PROTECT = True
+# ---------------------------------------------------------------------------
+# Storage channel (the "database channel"). The bot must be an admin here.
+# ---------------------------------------------------------------------------
+DB_CHANNEL = int(os.environ.get("DB_CHANNEL", "-1004341396904"))
 
-# Messages Configuration
-MESSAGES = {
-    "START": "<b>›› ʜᴇʏ!!, {first} ~ <blockquote>ʟᴏᴠᴇ ᴘᴏʀɴʜᴡᴀ? ɪ ᴀᴍ ᴍᴀᴅᴇ ᴛᴏ ʜᴇʟᴘ ʏᴏᴜ ᴛᴏ ғɪɴᴅ ᴡʜᴀᴛ ʏᴏᴜ aʀᴇ ʟᴏᴏᴋɪɴɢ ꜰᴏʀ.</blockquote></b>",
-    "FSUB": "<b><blockquote>›› ʜᴇʏ ×</blockquote>\n  ʏᴏᴜʀ ғɪʟᴇ ɪs ʀᴇᴀᴅʏ ‼️ ʟᴏᴏᴋs ʟɪᴋᴇ ʏᴏᴜ ʜᴀᴠᴇɴ'ᴛ sᴜʙsᴄʀɪʙᴇᴅ ᴛᴏ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ʏᴇᴛ, sᴜʙsᴄʀɪʙᴇ ɴᴏᴡ ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ғɪʟᴇs</b>",
-    "ABOUT": "<b>›› ғᴏʀ ᴍᴏʀᴇ: @Nova_Flix \n <blockquote expandable>›› ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟ: <a href='https://t.me/codeflix_bots'>Cʟɪᴄᴋ ʜᴇʀᴇ</a> \n›› ᴏᴡɴᴇʀ: @ProYato\n›› ʟᴀɴɢᴜᴀɢᴇ: <a href='https://docs.python.org/3/'>Pʏᴛʜᴏɴ 3</a> \n›› ʟɪʙʀᴀʀʏ: <a href='https://docs.pyrogram.org/'>Pʏʀᴏɢʀᴀᴍ ᴠ2</a> \n›› ᴅᴀᴛᴀʙᴀsᴇ: <a href='https://www.mongodb.com/docs/'>Mᴏɴɢᴏ ᴅʙ</a> \n›› ᴅᴇᴠᴇʟᴏᴘᴇʀ: @cosmic_freak</b></blockquote>",
-    "REPLY": "<b>For More Join - @Hanime_Arena</b>",
-    "SHORT_MSG": "<b>📊 ʜᴇʏ {first}, \n\n‼️ ɢᴇᴛ ᴀʟʟ ꜰɪʟᴇꜱ ɪɴ ᴀ ꜱɪɴɢʟᴇ ʟɪɴᴋ ‼️\n\n ⌯ ʏᴏᴜʀ ʟɪɴᴋ ɪꜱ ʀᴇᴀᴅʏ, ᴋɪɴᴅʟʏ ᴄʟɪᴄᴋ ᴏɴ ᴏᴘᴇɴ ʟɪɴᴋ ʙᴜᴛᴛᴏɴ..</b>",
-    "START_PHOTO": "https://graph.org/file/510affa3d4b6c911c12e3.jpg",
-    "FSUB_PHOTO": "https://telegra.ph/file/7a16ef7abae23bd238c82-b8fbdcb05422d71974.jpg",
-    "SHORT_PIC": "https://telegra.ph/file/7a16ef7abae23bd238c82-b8fbdcb05422d71974.jpg",
-    "SHORT": "https://telegra.ph/file/8aaf4df8c138c6685dcee-05d3b183d4978ec347.jpg"
-}
+# ---------------------------------------------------------------------------
+# Local lightweight database (SQLite) - only used to store user IDs, bans,
+# generated-link metadata, and settings. Actual files always live in the
+# Telegram DB_CHANNEL, never on local disk.
+# ---------------------------------------------------------------------------
+DB_PATH = os.environ.get("DB_PATH", "filestore.db")
 
-def LOGGER(name: str, client_name: str) -> logging.Logger:
-    logger = logging.getLogger(name)
-    formatter = logging.Formatter(
-        f"[%(asctime)s - %(levelname)s] - {client_name} - %(name)s - %(message)s",
-        datefmt='%d-%b-%y %H:%M:%S'
-    )
-    file_handler = RotatingFileHandler(LOG_FILE_NAME, maxBytes=50_000_000, backupCount=10)
-    file_handler.setFormatter(formatter)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.setLevel(logging.INFO)
-    logger.addHandler(file_handler)
-    logger.addHandler(stream_handler)
+# ---------------------------------------------------------------------------
+# Access control
+# ---------------------------------------------------------------------------
+# Full admins (owners) - comma separated list of user IDs in the env var.
+ADMINS = [int(x) for x in os.environ.get("ADMINS", "7053545607").split(",") if x.strip()]
 
-    return logger
+# Moderators - trusted users allowed to run mod-only commands but who are
+# not full owners.
+MODERATORS = [int(x) for x in os.environ.get("MODERATORS", "7053545607").split(",") if x.strip()]
+
+def is_admin(user_id: int) -> bool:
+    return user_id in ADMINS
+
+def is_mod_or_admin(user_id: int) -> bool:
+    return user_id in ADMINS or user_id in MODERATORS
+
+# ---------------------------------------------------------------------------
+# Force-subscribe channels. Users must join ALL of these before using the
+# bot. Use channel IDs (ints, e.g. -1001234567890) or @usernames (strings).
+# The bot must be an admin in each of these channels to check membership
+# and to generate invite links for private channels.
+# ---------------------------------------------------------------------------
+FORCE_SUB_CHANNELS = [
+    x.strip() for x in os.environ.get("FORCE_SUB_CHANNELS", "-1004318185372").split(",") if x.strip()
+]
+
+FORCE_SUB_ALERT_TEXT = (
+    "TO USE THIS BOT, YOU MUST JOIN ALL CHANNELS. "
+    "JOIN ALL CHANNELS AND PRESS 'TRY AGAIN'."
+)
+
+# ---------------------------------------------------------------------------
+# Misc
+# ---------------------------------------------------------------------------
+BOT_USERNAME = os.environ.get("BOT_USERNAME", "My Storage Bot")  # without @, filled in on boot if empty
+START_TEXT = (
+    "👋 Hello {mention}!\n\n"
+    "I'm alive and ready to store & deliver files.\n"
+    "Send me a shareable link, or ask an admin to generate one for you."
+)
+FLOOD_WAIT_SAFETY_SLEEP = 0.00  # seconds between broadcast sends, in addition to FloodWait handling
